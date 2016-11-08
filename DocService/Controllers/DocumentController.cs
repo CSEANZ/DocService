@@ -1,4 +1,6 @@
-﻿using DocService.Models;
+﻿using DocService.Helpers;
+using DocService.Models;
+using DocService.Services;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -20,22 +22,16 @@ namespace DocService.Controllers
         public async Task<IEnumerable<Doc>> Get()
         {
             //TODO Get all of the Docs in the list
-            return new Doc[]
-            {
-                new Models.Doc { FileName="FirstFile.docx", Id=Guid.NewGuid(), Title="Hello World" }
-            };
+            return DataService.GetDocumentHeaders();
         }
 
         // GET: api/Document/{Guid}
-        public async Task<IHttpActionResult> Get(Guid id)
+        public async Task<IHttpActionResult> Get(Guid DocId)
         {
-            //TODO Build the document (or 404 if no such id)
-            if (id.ToString() == "00000000-0000-0000-0000-000000000000")
+            try
             {
-                return NotFound();
-            }
-            else
-            {
+                var fullDoc = DataService.getFullDoc(DocId);
+
                 IHttpActionResult result;
                 MemoryStream mem = new MemoryStream();
 
@@ -50,9 +46,25 @@ namespace DocService.Controllers
                     // Create the document structure and add some text.
                     mainPart.Document = new Document();
                     Body body = mainPart.Document.AppendChild(new Body());
-                    Paragraph para = body.AppendChild(new Paragraph());
-                    Run run = para.AppendChild(new Run());
-                    run.AppendChild(new Text("Hello world!"));
+
+                    // Title and Sub-title
+                    Paragraph titlePara = body.AppendChild(new Paragraph());
+                    DocHelper.ApplyStyleToParagraph(wordDocument, "unknown", "Title", titlePara);
+                    Run run = titlePara.AppendChild(new Run());
+                    run.AppendChild(new Text(fullDoc.Header.Title));
+
+                    Paragraph subTitlePara = body.AppendChild(new Paragraph());
+                    DocHelper.ApplyStyleToParagraph(wordDocument, "unknown", "Subtitle", subTitlePara);
+                    subTitlePara.AppendChild(new Run(new Text($"Created {fullDoc.Header.Created} (UTC)")));
+
+                    // Paragraph for each para in the list
+                    foreach (var para in fullDoc.Paragraphs)
+                    {
+                        body.AppendChild(new Paragraph(new Run(new Text(
+                            $"[{para.TimeStamp} (UTC)] - {para.Text}"))));
+                    }
+
+
                     mainPart.Document.Save();
                 }
 
@@ -61,45 +73,57 @@ namespace DocService.Controllers
                 HttpResponseMessage msg = new HttpResponseMessage(HttpStatusCode.OK);
                 msg.Content = new StreamContent(mem);
 
-                string fileName = "HelloWorld.docx";
-
                 msg.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
                 msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
                 {
-                    FileName = $"{fileName}"
+                    FileName = $"{fullDoc.Header.FileName}"
                 };
                 result = ResponseMessage(msg);
 
 
                 return result;
             }
+            catch (KeyNotFoundException e)
+            {
+                return NotFound();
+            }
+
+            }
 
         }
 
         // POST: api/Document
-        public async Task<Guid> Post([FromBody]Doc value)
+        public async Task<IHttpActionResult> Post([FromBody]Doc value)
         {
-            //TODO Create the document header
             value.Id = Guid.NewGuid();
+            value.Created = DateTimeOffset.UtcNow;
 
-            return value.Id;
+            if (string.IsNullOrWhiteSpace(value.Title))
+                value.Title = "Transcript";
+
+            if (string.IsNullOrWhiteSpace(value.FileName))
+                value.FileName = $"{value.Id}.docx";
+
+            
+
+            return Json<Doc>(value);
         }
 
         // PATCH: api/Document/5
-        public async Task<IHttpActionResult> Patch(Guid id, [FromBody]Para value)
+        public async Task<IHttpActionResult> Patch(Guid docId, [FromBody]Para value)
         {
             //TODO Add a paragraph
-            if (id.ToString() == "00000000-0000-0000-0000-000000000000")
+            if (docId.ToString() == "00000000-0000-0000-0000-000000000000")
                 return NotFound();
             else
                 return Ok();
         }
 
         // DELETE: api/Document/5
-        public async Task<IHttpActionResult> Delete(Guid id)
+        public async Task<IHttpActionResult> Delete(Guid docId)
         {
             //TODO Delete the document and all of its paragraphs
-            if (id.ToString() == "00000000-0000-0000-0000-000000000000")
+            if (docId.ToString() == "00000000-0000-0000-0000-000000000000")
                 return NotFound();
             else
                 return Ok();
