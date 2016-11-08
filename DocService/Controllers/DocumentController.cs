@@ -42,6 +42,7 @@ namespace DocService.Controllers
                 {
                     // Add a main document part. 
                     MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
+                    DocHelper.AddStyles(mainPart);
 
                     // Create the document structure and add some text.
                     mainPart.Document = new Document();
@@ -60,8 +61,10 @@ namespace DocService.Controllers
                     // Paragraph for each para in the list
                     foreach (var para in fullDoc.Paragraphs)
                     {
-                        body.AppendChild(new Paragraph(new Run(new Text(
+                        var paragraph = body.AppendChild(new Paragraph(new Run(new Text(
                             $"[{para.TimeStamp} (UTC)] - {para.Text}"))));
+                        if (!string.IsNullOrWhiteSpace(para.Style))
+                            DocHelper.ApplyStyleToParagraph(wordDocument, "unknown", para.Style, paragraph);
                     }
 
 
@@ -88,7 +91,6 @@ namespace DocService.Controllers
                 return NotFound();
             }
 
-            }
 
         }
 
@@ -109,24 +111,33 @@ namespace DocService.Controllers
             return Json<Doc>(value);
         }
 
-        // PATCH: api/Document/5
+        // PATCH: api/Document/{id}
         public async Task<IHttpActionResult> Patch(Guid docId, [FromBody]Para value)
         {
-            //TODO Add a paragraph
-            if (docId.ToString() == "00000000-0000-0000-0000-000000000000")
+            try
+            {
+                value.DocId = docId;
+                return Json<Para>(await DataService.AddParagraph(value));
+            }
+            catch (KeyNotFoundException)
+            {
+
                 return NotFound();
-            else
-                return Ok();
+            }
         }
 
-        // DELETE: api/Document/5
+        // DELETE: api/Document/{id}
         public async Task<IHttpActionResult> Delete(Guid docId)
         {
-            //TODO Delete the document and all of its paragraphs
-            if (docId.ToString() == "00000000-0000-0000-0000-000000000000")
-                return NotFound();
-            else
+            try
+            {
+                await DataService.DeleteParagraph(docId);
                 return Ok();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
     }
 }
