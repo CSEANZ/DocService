@@ -127,6 +127,17 @@ namespace DocService.Services
             }
         }
 
+        public static async Task<Doc> AddDocument(Doc value)
+        {
+            TableOperation insertOperation = TableOperation.Insert(DocEntity.FromDoc(value));
+            var result = await documentTable.ExecuteAsync(insertOperation);
+
+            if (result.HttpStatusCode / 100 != 2)
+                throw new Exception("Error adding document");
+
+            return value;
+        }
+
         public static Para GetPara(Guid id)
         {
             return GetParaEnt(id).ToPara();
@@ -227,6 +238,8 @@ namespace DocService.Services
         {
             return new DocEntity
             {
+                PartitionKey = "DocumentService",
+                RowKey = doc.Id.ToString("N"),
                 Id = doc.Id,
                 FileName = doc.FileName,
                 Title = doc.Title,
@@ -259,6 +272,8 @@ namespace DocService.Services
         {
             return new ParaEntity
             {
+                PartitionKey = "DocumentService",
+                RowKey = para.Id.ToString("N"),
                 Id = para.Id,
                 DocId = para.DocId,
                 Text = para.Text,

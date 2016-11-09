@@ -19,6 +19,7 @@ namespace DocService.Controllers
     public class DocumentController : ApiController
     {
         // GET: api/Document
+        [HttpGet()]
         public async Task<IEnumerable<Doc>> Get()
         {
             //TODO Get all of the Docs in the list
@@ -26,6 +27,8 @@ namespace DocService.Controllers
         }
 
         // GET: api/Document/{Guid}
+        [HttpGet()]
+        [Route("{docId}")]
         public async Task<IHttpActionResult> Get(Guid DocId)
         {
             try
@@ -95,6 +98,7 @@ namespace DocService.Controllers
         }
 
         // POST: api/Document
+        [HttpPost()]
         public async Task<IHttpActionResult> Post([FromBody]Doc value)
         {
             value.Id = Guid.NewGuid();
@@ -106,13 +110,16 @@ namespace DocService.Controllers
             if (string.IsNullOrWhiteSpace(value.FileName))
                 value.FileName = $"{value.Id}.docx";
 
-            
 
-            return Json<Doc>(value);
+            Doc newDoc = await DataService.AddDocument(value);
+
+            return Json<Doc>(newDoc);
         }
 
-        // PATCH: api/Document/{id}
-        public async Task<IHttpActionResult> Patch(Guid docId, [FromBody]Para value)
+        // PUT: api/Document/{id}
+        [HttpPut()]
+        [Route("{docId}")]
+        public async Task<IHttpActionResult> Put(Guid docId, [FromBody]Para value)
         {
             try
             {
@@ -127,6 +134,8 @@ namespace DocService.Controllers
         }
 
         // DELETE: api/Document/{id}
+        [HttpDelete()]
+        [Route("{docId}")]
         public async Task<IHttpActionResult> Delete(Guid docId)
         {
             try
