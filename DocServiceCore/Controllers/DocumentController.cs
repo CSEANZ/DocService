@@ -34,7 +34,7 @@ namespace DocServiceCore.Controllers
             {
                 try
                 {
-                    var fullDoc = DataService.getFullDoc(id);
+                    var fullDoc = DataService.GetFullDoc(id);
 
                     MemoryStream mem = new MemoryStream();
 

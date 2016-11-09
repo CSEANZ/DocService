@@ -177,12 +177,12 @@ namespace DocServiceCore.Services
         {
             // find the paragraphs
             TableQuery<ParaEntity> query = new TableQuery<ParaEntity>();
-            var paraEntList = paragraphTable.ExecuteQuery(query).Where(p => p.DocId == docId).ToList();
+            var paraEntList = paragraphTable.ExecuteQuery(query).Where(p => p.DocId == docId).OrderBy(p=>p.TimeStamp).ToList();
 
             return paraEntList;
         }
 
-        public static FullDoc getFullDoc(Guid id)
+        public static FullDoc GetFullDoc(Guid id)
         {
             var fullDoc = new FullDoc
             {
