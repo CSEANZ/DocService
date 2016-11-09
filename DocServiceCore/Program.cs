@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using System.Web.Http;
-using Swashbuckle.Application;
 
 namespace DocServiceCore
 {
@@ -21,9 +20,6 @@ namespace DocServiceCore
                 .UseStartup<Startup>()
                 .Build();
 
-            new HttpConfiguration()
-     .EnableSwagger(c => c.SingleApiVersion("v1", "Transcript Document Generator"))
-     .EnableSwaggerUi();
 
             host.Run();
         }

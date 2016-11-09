@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using DocServiceCore.Services;
 
 namespace DocServiceCore
 {
@@ -29,6 +30,22 @@ namespace DocServiceCore
         {
             // Add framework services.
             services.AddMvc();
+
+            services.AddSwaggerGen(options =>
+            {
+
+            });
+
+            services.ConfigureSwaggerGen(options =>
+            {
+                options.SingleApiVersion(new Swashbuckle.Swagger.Model.Info
+                {
+                    Version = "v1",
+                    Title = "Transcript Document Generator",
+                    Description = "All the docs that you'll ever need"
+                });
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +55,16 @@ namespace DocServiceCore
             loggerFactory.AddDebug();
 
             app.UseMvc();
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui assets (HTML, JS, CSS etc.)
+            app.UseSwaggerUi();
+
+            
+
+            DataService.Initialze(Configuration["StorageConnectionString"]);
         }
     }
 }

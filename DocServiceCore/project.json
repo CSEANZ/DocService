@@ -14,8 +14,7 @@
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
     "Microsoft.WindowsAzure.ConfigurationManager": "3.2.3",
     "OpenXMLSDK-MOT": "2.6.0",
-    "Swashbuckle": "5.5.3",
-    "Swashbuckle.Core": "5.5.3",
+    "Swashbuckle": "6.0.0-beta902",
     "WindowsAzure.Storage": "7.2.1"
   },
 

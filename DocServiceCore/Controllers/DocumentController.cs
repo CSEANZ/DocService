@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using DocServiceCore.Models;
 using DocServiceCore.Services;
-using System.Web.Http;
 using System.IO;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -17,19 +16,19 @@ using DocumentFormat.OpenXml;
 
 namespace DocServiceCore.Controllers
 {
-    [Microsoft.AspNetCore.Mvc.Route("api/[controller]")]
+    [Route("api/[controller]")]
     public class DocumentController : Controller
     {
-        // GET: api/values
-        [Microsoft.AspNetCore.Mvc.HttpGet]
+        // GET: api/document
+        [HttpGet]
         public IEnumerable<Doc> Get()
         {
             //TODO Get all of the Docs in the list
             return DataService.GetDocumentHeaders();
         }
 
-        // GET api/values/5
-        [Microsoft.AspNetCore.Mvc.HttpGet("{id}")]
+        // GET api/document/{id}
+        [HttpGet("{id}")]
         public async Task<ActionResult> Get(Guid id)
         {
             {
@@ -37,7 +36,6 @@ namespace DocServiceCore.Controllers
                 {
                     var fullDoc = DataService.getFullDoc(id);
 
-                    IHttpActionResult result;
                     MemoryStream mem = new MemoryStream();
 
 
@@ -47,7 +45,6 @@ namespace DocServiceCore.Controllers
                     {
                         // Add a main document part. 
                         MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
-                        DocHelper.AddStyles(mainPart);
 
                         // Create the document structure and add some text.
                         mainPart.Document = new Document();
@@ -55,12 +52,10 @@ namespace DocServiceCore.Controllers
 
                         // Title and Sub-title
                         Paragraph titlePara = body.AppendChild(new Paragraph());
-                        DocHelper.ApplyStyleToParagraph(wordDocument, "unknown", "Title", titlePara);
                         Run run = titlePara.AppendChild(new Run());
                         run.AppendChild(new Text(fullDoc.Header.Title));
 
                         Paragraph subTitlePara = body.AppendChild(new Paragraph());
-                        DocHelper.ApplyStyleToParagraph(wordDocument, "unknown", "Subtitle", subTitlePara);
                         subTitlePara.AppendChild(new Run(new Text($"Created {fullDoc.Header.Created} (UTC)")));
 
                         // Paragraph for each para in the list
@@ -68,8 +63,6 @@ namespace DocServiceCore.Controllers
                         {
                             var paragraph = body.AppendChild(new Paragraph(new Run(new Text(
                                 $"[{para.TimeStamp} (UTC)] - {para.Text}"))));
-                            if (!string.IsNullOrWhiteSpace(para.Style))
-                                DocHelper.ApplyStyleToParagraph(wordDocument, "unknown", para.Style, paragraph);
                         }
 
 
@@ -91,7 +84,7 @@ namespace DocServiceCore.Controllers
             }
         }
 
-        // POST api/values
+        // POST api/document
         [System.Web.Http.HttpPost]
         public async Task<ActionResult> Post([System.Web.Http.FromBody]Doc value)
         {
@@ -111,8 +104,8 @@ namespace DocServiceCore.Controllers
         }
 
         // PUT api/document/{id}
-        [Microsoft.AspNetCore.Mvc.HttpPut("{id}")]
-        public async Task<ActionResult> Put(Guid id, [Microsoft.AspNetCore.Mvc.FromBody]Para value)
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Put(Guid id, [FromBody]Para value)
         {
             try
             {
@@ -126,9 +119,9 @@ namespace DocServiceCore.Controllers
             }
         }
 
-        // DELETE api/values/5
-        [Microsoft.AspNetCore.Mvc.HttpDelete("{id}")]
-        public async Task<IHttpActionResult> Delete(Guid id)
+        // DELETE api/document/{id}
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(Guid id)
         {
             try
             {

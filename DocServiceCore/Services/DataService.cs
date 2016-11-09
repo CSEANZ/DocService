@@ -24,18 +24,15 @@ namespace DocServiceCore.Services
 
 
 
-        static DataService()
+        public static void Initialze(string storageConnectionString)
         {
-            storageAccount = CloudStorageAccount.Parse("UseDevelopmentStorage=true");
-            //storageAccount = CloudStorageAccount.Parse(
-            //    CloudConfigurationManager.GetSetting("StorageConnectionString"));
+            storageAccount = CloudStorageAccount.Parse(storageConnectionString);
 
             tableClient = storageAccount.CreateCloudTableClient();
             documentTable = tableClient.GetTableReference("document");
             documentTable.CreateIfNotExists();
             paragraphTable = tableClient.GetTableReference("paragraph");
             paragraphTable.CreateIfNotExists();
-
         }
 
         public static async Task<Para> AddParagraph(Para para)
