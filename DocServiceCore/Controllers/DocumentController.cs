@@ -39,35 +39,42 @@ namespace DocServiceCore.Controllers
 
                     MemoryStream mem = new MemoryStream();
 
-
-                    // Create Document
-                    using (WordprocessingDocument wordDocument =
-                        WordprocessingDocument.Create(mem, WordprocessingDocumentType.Document, true))
+                    if (true)
                     {
-                        // Add a main document part. 
-                        MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
-
-                        // Create the document structure and add some text.
-                        mainPart.Document = new Document();
-                        Body body = mainPart.Document.AppendChild(new Body());
-
-                        // Title and Sub-title
-                        Paragraph titlePara = body.AppendChild(new Paragraph());
-                        Run run = titlePara.AppendChild(new Run());
-                        run.AppendChild(new Text(fullDoc.Header.Title));
-
-                        Paragraph subTitlePara = body.AppendChild(new Paragraph());
-                        subTitlePara.AppendChild(new Run(new Text($"Created {fullDoc.Header.Created} (UTC)")));
-
-                        // Paragraph for each para in the list
-                        foreach (var para in fullDoc.Paragraphs)
+                        DocCreator.CreatePackage(mem, fullDoc);
+                    }
+                    else
+                    {
+                        var paraTimeStamp = true;
+                        // Create Document
+                        using (WordprocessingDocument wordDocument =
+                            WordprocessingDocument.Create(mem, WordprocessingDocumentType.Document, true))
                         {
-                            var paragraph = body.AppendChild(new Paragraph(new Run(new Text(
-                                $"[{para.TimeStamp} (UTC)] - {para.Text}"))));
+                            // Add a main document part. 
+                            MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
+
+                            // Create the document structure and add some text.
+                            mainPart.Document = new Document();
+                            Body body = mainPart.Document.AppendChild(new Body());
+
+                            // Title and Sub-title
+                            Paragraph titlePara = body.AppendChild(new Paragraph());
+                            Run run = titlePara.AppendChild(new Run());
+                            run.AppendChild(new Text(fullDoc.Header.Title));
+
+                            Paragraph subTitlePara = body.AppendChild(new Paragraph());
+                            subTitlePara.AppendChild(new Run(new Text($"Created {fullDoc.Header.Created} (UTC)")));
+                            // Paragraph for each para in the list
+                            foreach (var para in fullDoc.Paragraphs)
+                            {
+                                var tsString = paraTimeStamp ? $"[{para.TimeStamp} (UTC)] - " : "";
+                                var paragraph = body.AppendChild(new Paragraph(new Run(new Text(
+                                    $"{tsString}{para.Text}"))));
+                            }
+
+
+                            mainPart.Document.Save();
                         }
-
-
-                        mainPart.Document.Save();
                     }
 
                     mem.Seek(0, SeekOrigin.Begin);
