@@ -11,6 +11,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using DocServiceCore.Helpers;
 using System.Net;
 using DocumentFormat.OpenXml;
+using Swashbuckle.SwaggerGen.Annotations;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -85,8 +86,11 @@ namespace DocServiceCore.Controllers
         }
 
         // POST api/document
-        [System.Web.Http.HttpPost]
-        public async Task<ActionResult> Post([System.Web.Http.FromBody]Doc value)
+        [HttpPost]
+        [SwaggerOperation("PostData")]
+        [ProducesResponseType(typeof(Doc), 200)]
+        
+        public async Task<ActionResult> Post([FromBody]Doc value)
         {
             value.Id = Guid.NewGuid();
             value.Created = DateTimeOffset.UtcNow;
@@ -98,9 +102,9 @@ namespace DocServiceCore.Controllers
                 value.FileName = $"{value.Id}.docx";
 
 
-            Doc newDoc = await DataService.AddDocument(value);
+            var newDoc = await DataService.AddDocument(value);
 
-            return Json(newDoc);
+            return Ok(newDoc);
         }
 
         // PUT api/document/{id}
